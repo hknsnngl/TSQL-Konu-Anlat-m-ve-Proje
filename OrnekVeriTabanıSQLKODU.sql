@@ -1,0 +1,61 @@
+CREATE DATABASE DB_SCHOOL
+ON
+(NAME = DB_SCHOOL_MDF																				--(Dosya Adý)
+, FILENAME= 'C:\Program Files\Microsoft SQL Server\MSSQL11.SQLEXPRESS\MSSQL\DATA\SCHOOL.mdf'		--(Fiziksel Dosya Adý)
+, SIZE = 5120KB																						--(Dosya Boyutu)
+, MAXSIZE = UNLIMITED																				--(Maksimum Dosya Boyutu)
+, FILEGROWTH =1024)																				    --(Artým Miktarý)
+LOG
+ON
+(NAME = DB_SCHOOL_LOG
+, FILENAME= 'C:\Program Files\Microsoft SQL Server\MSSQL11.SQLEXPRESS\MSSQL\DATA\SCHOOL.ldf'
+, SIZE = 1024KB
+, MAXSIZE = 2048KB
+, FILEGROWTH =10%)
+GO
+CREATE TABLE tbl_ders
+(
+ ders_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+ dersKodu NVARCHAR(10) UNIQUE,
+ dersAd  NVARCHAR(100) NOT NULL,
+ kredi TINYINT NOT NULL,
+ dersVeren NVARCHAR(100) NOT NULL,
+)
+GO
+CREATE TABLE tbl_bolumler
+(
+ bolum_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+ bolumKodu SMALLINT NOT NULL UNIQUE ,
+ bolumAdi VARCHAR(100) NOT NULL,
+ adres VARCHAR(255) NOT NULL,
+ telefon CHAR(16) CHECK(TELEFON LIKE '0([0-9][0-9][0-9])[0-9][0-9][0-9] [0-9][0-9] [0-9][0-9]') NOT NULL,
+)
+GO
+CREATE TABLE tbl_ogrenci
+(
+ ogr_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+ ogrNo NVARCHAR(8) NOT NULL UNIQUE ,
+ tcNo BIGINT UNIQUE NOT NULL,
+ ad NVARCHAR(25) NOT NULL,
+ soyad NVARCHAR(25) NOT NULL,
+ memleket NVARCHAR(25) DEFAULT 'UNYE' NOT NULL, 
+ Cinsiyet VARCHAR(5) CHECK([CÝNSÝYET] IN ('BAY','BAYAN')) NOT NULL,
+ telefon CHAR(16) CHECK(TELEFON LIKE '0([0-9][0-9][0-9]) [0-9][0-9][0-9] [0-9][0-9] [0-9][0-9]') NOT NULL,
+ mail VARCHAR(255) CHECK(mail LIKE '%@ordu.edu.tr') NULL,
+ kayitTarihi DATETIME NOT NULL DEFAULT GETDATE(),
+ bolum_id INT REFERENCES tbl_bolumler(bolum_id)
+ ON DELETE CASCADE ON UPDATE CASCADE 
+)
+GO
+CREATE TABLE tbl_notlar
+(
+ ogr_id INT UNIQUE NOT NULL,
+ ders_id INT UNIQUE NOT NULL, 
+ vize TINYINT CHECK ([VÝZE] BETWEEN 0 AND 100) NULL,
+ final TINYINT CHECK ([FÝNAL] BETWEEN 0 AND 100) NULL,
+ ortalama FLOAT NULL,
+ durum char(2) NULL, 
+ CONSTRAINT FK_ogr  FOREIGN KEY(ogr_id) REFERENCES tbl_ogrenci(ogr_id) ON DELETE CASCADE ON UPDATE CASCADE ,
+ CONSTRAINT FK_ders FOREIGN KEY(ders_id) REFERENCES tbl_ders(ders_id)  ON DELETE CASCADE ON UPDATE CASCADE ,
+ CONSTRAINT PK_NOTLAR PRIMARY KEY (ogr_id, ders_id)
+ )
